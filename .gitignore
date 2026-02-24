@@ -37,6 +37,9 @@ nuget.exe
 *.swo
 *~
 
+## Publish output
+publish/
+
 ## OS
 .DS_Store
 Thumbs.db
