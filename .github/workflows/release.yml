@@ -1,0 +1,110 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            runtime: win-x64
+            artifact: TextRewriter-windows-x64
+          - os: macos-latest
+            runtime: osx-arm64
+            artifact: TextRewriter-macos-arm64
+          - os: macos-13
+            runtime: osx-x64
+            artifact: TextRewriter-macos-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish
+        run: dotnet publish src/TextRewriter.App/TextRewriter.App.csproj -c Release -r ${{ matrix.runtime }} --self-contained -o publish/${{ matrix.artifact }}
+
+      - name: Create macOS .app bundle
+        if: startsWith(matrix.runtime, 'osx')
+        run: |
+          mkdir -p publish/TextRewriter.app/Contents/MacOS
+          mkdir -p publish/TextRewriter.app/Contents/Resources
+          cp -r publish/${{ matrix.artifact }}/* publish/TextRewriter.app/Contents/MacOS/
+          cat > publish/TextRewriter.app/Contents/Info.plist << 'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleName</key><string>Text Rewriter</string>
+              <key>CFBundleIdentifier</key><string>com.textrewriter.app</string>
+              <key>CFBundleVersion</key><string>${{ github.ref_name }}</string>
+              <key>CFBundleExecutable</key><string>TextRewriter.App</string>
+              <key>CFBundlePackageType</key><string>APPL</string>
+              <key>LSMinimumSystemVersion</key><string>10.15</string>
+              <key>NSHighResolutionCapable</key><true/>
+              <key>LSUIElement</key><true/>
+              <key>NSAccessibilityUsageDescription</key>
+              <string>Text Rewriter needs accessibility access to detect keyboard shortcuts and simulate text input.</string>
+          </dict>
+          </plist>
+          PLIST
+          cd publish && zip -r ${{ matrix.artifact }}.zip TextRewriter.app/
+
+      - name: Create Windows zip
+        if: startsWith(matrix.runtime, 'win')
+        run: |
+          cd publish
+          7z a ${{ matrix.artifact }}.zip ${{ matrix.artifact }}/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: publish/${{ matrix.artifact }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Text Rewriter ${{ github.ref_name }}
+          body: |
+            # Text Rewriter ${{ github.ref_name }}
+
+            Cross-platform system tray applicatie die tekst herschrijft met Claude AI.
+
+            ## Downloads
+
+            | Platform | Bestand |
+            |----------|---------|
+            | Windows x64 | `TextRewriter-windows-x64.zip` |
+            | macOS Apple Silicon | `TextRewriter-macos-arm64.zip` |
+            | macOS Intel | `TextRewriter-macos-x64.zip` |
+
+            ## Gebruik
+            1. Download en pak uit
+            2. Start de applicatie → tray icon verschijnt
+            3. Selecteer tekst → druk `Ctrl+Shift+R` (macOS: `Cmd+Shift+R`)
+            4. Rechtsklik tray icon om profiel te wisselen
+          files: |
+            artifacts/**/*.zip
