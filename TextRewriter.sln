@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3845F696-1D75-4E74-8313-041BFDB5AFD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextRewriter.Core", "src\TextRewriter.Core\TextRewriter.Core.csproj", "{BEF86E62-A177-4066-B0FB-07B4E815EB74}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextRewriter.Services", "src\TextRewriter.Services\TextRewriter.Services.csproj", "{EE8B4BF4-8A38-44F5-B5FF-64DFA848CAB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextRewriter.App", "src\TextRewriter.App\TextRewriter.App.csproj", "{7A0B38CD-53A2-4BCD-9F3F-BC24A5B7F4F1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BEF86E62-A177-4066-B0FB-07B4E815EB74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEF86E62-A177-4066-B0FB-07B4E815EB74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEF86E62-A177-4066-B0FB-07B4E815EB74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEF86E62-A177-4066-B0FB-07B4E815EB74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE8B4BF4-8A38-44F5-B5FF-64DFA848CAB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE8B4BF4-8A38-44F5-B5FF-64DFA848CAB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE8B4BF4-8A38-44F5-B5FF-64DFA848CAB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE8B4BF4-8A38-44F5-B5FF-64DFA848CAB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A0B38CD-53A2-4BCD-9F3F-BC24A5B7F4F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A0B38CD-53A2-4BCD-9F3F-BC24A5B7F4F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A0B38CD-53A2-4BCD-9F3F-BC24A5B7F4F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A0B38CD-53A2-4BCD-9F3F-BC24A5B7F4F1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BEF86E62-A177-4066-B0FB-07B4E815EB74} = {3845F696-1D75-4E74-8313-041BFDB5AFD1}
+		{EE8B4BF4-8A38-44F5-B5FF-64DFA848CAB7} = {3845F696-1D75-4E74-8313-041BFDB5AFD1}
+		{7A0B38CD-53A2-4BCD-9F3F-BC24A5B7F4F1} = {3845F696-1D75-4E74-8313-041BFDB5AFD1}
+	EndGlobalSection
+EndGlobal

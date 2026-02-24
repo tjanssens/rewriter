@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TextRewriter.App.ViewModels"
+        xmlns:models="using:TextRewriter.Core.Models"
+        x:Class="TextRewriter.App.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="Text Rewriter - Instellingen"
+        Width="700" Height="500"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+
+    <Grid ColumnDefinitions="220,*" Margin="16">
+        <!-- Left: Profile list -->
+        <DockPanel Grid.Column="0" Margin="0,0,16,0">
+            <TextBlock DockPanel.Dock="Top" Text="Profielen" FontWeight="Bold" Margin="0,0,0,8" />
+
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                <Button Content="+" Click="OnAddProfile" Width="40" />
+                <Button Content="-" Click="OnRemoveProfile" Width="40" />
+            </StackPanel>
+
+            <ListBox ItemsSource="{Binding Profiles}"
+                     SelectedItem="{Binding SelectedProfile}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:RewriteProfile">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <!-- Right: Profile editor -->
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="12" IsEnabled="{Binding HasSelection}">
+                <TextBlock Text="Profiel bewerken" FontWeight="Bold" />
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Naam:" />
+                    <TextBox Text="{Binding ProfileName}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Herschrijfinstructies:" />
+                    <TextBox Text="{Binding ProfilePrompt}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             Height="200" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Model:" />
+                    <TextBox Text="{Binding ProfileModel}" />
+                </StackPanel>
+
+                <Separator Margin="0,8" />
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Sneltoets:" />
+                    <TextBlock Text="{Binding ShortcutDisplay}" FontWeight="Bold" FontSize="16" />
+                    <TextBlock Text="Wijzig de sneltoets in het configuratiebestand."
+                               FontSize="11" Foreground="Gray" />
+                </StackPanel>
+
+                <Separator Margin="0,8" />
+
+                <Button Content="Opslaan" Click="OnSave"
+                        HorizontalAlignment="Right" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
