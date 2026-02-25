@@ -10,20 +10,32 @@ public class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly AppSettings _settings;
     private readonly ISettingsService _settingsService;
+    private readonly IRewriteService _rewriteService;
     private RewriteProfile? _selectedProfile;
+    private bool _isRecordingHotkey;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public SettingsViewModel(AppSettings settings, ISettingsService settingsService)
+    private static readonly ModelInfo[] FallbackModels =
+    [
+        new() { Id = "claude-haiku-4-5-20251001", DisplayName = "Claude Haiku 4.5" },
+        new() { Id = "claude-sonnet-4-20250514", DisplayName = "Claude Sonnet 4" },
+        new() { Id = "claude-opus-4-20250514", DisplayName = "Claude Opus 4" },
+    ];
+
+    public SettingsViewModel(AppSettings settings, ISettingsService settingsService, IRewriteService rewriteService)
     {
         _settings = settings;
         _settingsService = settingsService;
+        _rewriteService = rewriteService;
         Profiles = new ObservableCollection<RewriteProfile>(settings.Profiles);
+        AvailableModels = new ObservableCollection<ModelInfo>(FallbackModels);
         SelectedProfile = Profiles.FirstOrDefault(p => p.Id == settings.ActiveProfileId)
                           ?? Profiles.FirstOrDefault();
     }
 
     public ObservableCollection<RewriteProfile> Profiles { get; }
+    public ObservableCollection<ModelInfo> AvailableModels { get; }
 
     public RewriteProfile? SelectedProfile
     {
@@ -35,7 +47,7 @@ public class SettingsViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(HasSelection));
             OnPropertyChanged(nameof(ProfileName));
             OnPropertyChanged(nameof(ProfilePrompt));
-            OnPropertyChanged(nameof(ProfileModel));
+            OnPropertyChanged(nameof(SelectedModelOption));
         }
     }
 
@@ -67,20 +79,68 @@ public class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public string ProfileModel
+    public ModelInfo? SelectedModelOption
     {
-        get => _selectedProfile?.ModelId ?? "claude-sonnet-4-20250514";
+        get
+        {
+            var modelId = _selectedProfile?.ModelId ?? "claude-sonnet-4-20250514";
+            return AvailableModels.FirstOrDefault(m => m.Id == modelId);
+        }
         set
         {
-            if (_selectedProfile is not null)
+            if (_selectedProfile is not null && value is not null)
             {
-                _selectedProfile.ModelId = value;
+                _selectedProfile.ModelId = value.Id;
                 OnPropertyChanged();
             }
         }
     }
 
-    public string ShortcutDisplay => _settings.Hotkey.DisplayName;
+    public bool IsRecordingHotkey
+    {
+        get => _isRecordingHotkey;
+        set
+        {
+            _isRecordingHotkey = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HotkeyDisplay));
+        }
+    }
+
+    public string HotkeyDisplay => _isRecordingHotkey
+        ? "Druk op een toetscombinatie..."
+        : _settings.Hotkey.DisplayName;
+
+    public void UpdateHotkey(ushort keyCode, string keyName, bool ctrl, bool shift, bool alt, bool meta)
+    {
+        _settings.Hotkey.KeyCode = keyCode;
+        _settings.Hotkey.KeyName = keyName;
+        _settings.Hotkey.Ctrl = ctrl;
+        _settings.Hotkey.Shift = shift;
+        _settings.Hotkey.Alt = alt;
+        _settings.Hotkey.Meta = meta;
+        IsRecordingHotkey = false;
+    }
+
+    public async Task LoadModelsAsync()
+    {
+        var models = await _rewriteService.GetModelsAsync();
+        if (models.Count == 0)
+            return;
+
+        // Ensure the current profile's model is in the list
+        var currentModelId = _selectedProfile?.ModelId;
+        if (!string.IsNullOrEmpty(currentModelId) && models.All(m => m.Id != currentModelId))
+        {
+            models = models.Prepend(new ModelInfo { Id = currentModelId, DisplayName = currentModelId }).ToList();
+        }
+
+        AvailableModels.Clear();
+        foreach (var model in models)
+            AvailableModels.Add(model);
+
+        OnPropertyChanged(nameof(SelectedModelOption));
+    }
 
     public void AddProfile()
     {

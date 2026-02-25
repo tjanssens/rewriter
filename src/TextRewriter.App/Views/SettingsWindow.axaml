@@ -49,15 +49,21 @@
 
                 <StackPanel Spacing="4">
                     <TextBlock Text="Model:" />
-                    <TextBox Text="{Binding ProfileModel}" />
+                    <ComboBox ItemsSource="{Binding AvailableModels}"
+                              SelectedItem="{Binding SelectedModelOption}"
+                              HorizontalAlignment="Stretch" />
                 </StackPanel>
 
                 <Separator Margin="0,8" />
 
                 <StackPanel Spacing="4">
                     <TextBlock Text="Sneltoets:" />
-                    <TextBlock Text="{Binding ShortcutDisplay}" FontWeight="Bold" FontSize="16" />
-                    <TextBlock Text="Wijzig de sneltoets in het configuratiebestand."
+                    <Button Content="{Binding HotkeyDisplay}"
+                            Click="OnRecordHotkey"
+                            FontWeight="Bold" FontSize="14"
+                            HorizontalContentAlignment="Center"
+                            Padding="16,8" />
+                    <TextBlock Text="Klik op de knop en druk de gewenste toetscombinatie in."
                                FontSize="11" Foreground="Gray" />
                 </StackPanel>
 

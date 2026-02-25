@@ -136,6 +136,45 @@ public class RewriteService : IRewriteService
         }
     }
 
+    public async Task<IReadOnlyList<ModelInfo>> GetModelsAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var token = await _auth.GetAccessTokenAsync();
+            if (token is null)
+                return [];
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/v1/models?limit=100");
+
+            if (token.StartsWith("sk-ant-api"))
+                request.Headers.Add("x-api-key", token);
+            else
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            request.Headers.Add("anthropic-version", "2023-06-01");
+
+            var response = await _httpClient.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Failed to fetch models: {StatusCode}", response.StatusCode);
+                return [];
+            }
+
+            var json = await response.Content.ReadAsStringAsync(ct);
+            var result = JsonSerializer.Deserialize<ModelsResponse>(json, JsonOptions);
+
+            return result?.Data?
+                .Select(m => new ModelInfo { Id = m.Id, DisplayName = m.DisplayName })
+                .ToList()
+                ?? [];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to fetch models");
+            return [];
+        }
+    }
+
     // API response models
     private sealed class ApiResponse
     {
@@ -146,5 +185,16 @@ public class RewriteService : IRewriteService
     {
         public string Type { get; set; } = "";
         public string? Text { get; set; }
+    }
+
+    private sealed class ModelsResponse
+    {
+        public List<ModelData>? Data { get; set; }
+    }
+
+    private sealed class ModelData
+    {
+        public string Id { get; set; } = "";
+        public string DisplayName { get; set; } = "";
     }
 }

@@ -203,7 +203,10 @@ public partial class App : Application
                 return;
             }
 
-            var vm = new SettingsViewModel(_settings, _services.GetRequiredService<ISettingsService>());
+            var vm = new SettingsViewModel(
+                _settings,
+                _services.GetRequiredService<ISettingsService>(),
+                _services.GetRequiredService<IRewriteService>());
             _settingsWindow = new SettingsWindow { DataContext = vm };
             _settingsWindow.Closed += async (_, _) =>
             {
