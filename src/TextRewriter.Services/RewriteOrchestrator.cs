@@ -83,18 +83,19 @@ public class RewriteOrchestrator
 
             if (string.IsNullOrEmpty(copiedText))
             {
+                _logger.LogWarning("No text found to rewrite");
                 StatusMessage?.Invoke(this, "Geen tekst gevonden om te herschrijven.");
                 return;
             }
 
-            _logger.LogDebug("Sending {Length} chars to Claude with profile '{Profile}'",
-                copiedText.Length, activeProfile.Name);
+            _logger.LogDebug("Sending {Length} chars with profile '{Profile}' (model: {Model})", copiedText.Length, activeProfile.Name, activeProfile.ModelId);
 
             // Step 6: Send to Claude API
             var result = await _rewrite.RewriteAsync(copiedText, activeProfile);
 
             if (!result.Success)
             {
+                _logger.LogWarning("Rewrite failed: {Error}", result.ErrorMessage);
                 StatusMessage?.Invoke(this, result.ErrorMessage ?? "Herschrijven mislukt.");
                 // Restore original clipboard
                 if (originalClipboard is not null)

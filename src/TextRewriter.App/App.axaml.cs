@@ -216,6 +216,8 @@ public partial class App : Application
                 _settings = await settingsService.LoadAsync();
                 RebuildProfileMenu();
                 await _hotkeyService.UpdateBindingAsync(_settings.Hotkey);
+                // Clear auth cache so new API key takes effect immediately
+                _services.GetRequiredService<IAuthService>().ClearCache();
             };
             _settingsWindow.Show();
         });

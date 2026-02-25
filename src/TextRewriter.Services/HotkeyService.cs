@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using SharpHook;
 using SharpHook.Native;
 using TextRewriter.Core.Interfaces;
@@ -8,14 +9,17 @@ namespace TextRewriter.Services;
 public class HotkeyService : IHotkeyService
 {
     private TaskPoolGlobalHook? _hook;
+    private Task? _hookTask;
     private HotkeyBinding _binding = new();
     private readonly bool _isMacOS;
+    private readonly ILogger<HotkeyService> _logger;
 
     public event EventHandler? HotkeyTriggered;
 
-    public HotkeyService(IPlatformService platform)
+    public HotkeyService(IPlatformService platform, ILogger<HotkeyService> logger)
     {
         _isMacOS = platform.IsMacOS;
+        _logger = logger;
     }
 
     public async Task StartAsync(HotkeyBinding binding)
@@ -23,19 +27,19 @@ public class HotkeyService : IHotkeyService
         _binding = binding;
         _hook = new TaskPoolGlobalHook();
         _hook.KeyPressed += OnKeyPressed;
-        _ = Task.Run(async () =>
+        _hookTask = Task.Run(async () =>
         {
             try
             {
                 await _hook.RunAsync();
             }
-            catch (HookException)
+            catch (Exception ex)
             {
-                // Hook was disposed or failed to start
+                _logger.LogError(ex, "Global hook failed to run");
             }
         });
-        // Give the hook time to start
-        await Task.Delay(200);
+        await Task.Delay(500);
+        _logger.LogInformation("Global hook listening for {Hotkey}", binding.DisplayName);
     }
 
     private void OnKeyPressed(object? sender, KeyboardHookEventArgs e)
@@ -44,7 +48,6 @@ public class HotkeyService : IHotkeyService
             return;
 
         var mask = e.RawEvent.Mask;
-
         bool ctrlDown = mask.HasFlag(ModifierMask.LeftCtrl) || mask.HasFlag(ModifierMask.RightCtrl);
         bool shiftDown = mask.HasFlag(ModifierMask.LeftShift) || mask.HasFlag(ModifierMask.RightShift);
         bool altDown = mask.HasFlag(ModifierMask.LeftAlt) || mask.HasFlag(ModifierMask.RightAlt);
@@ -53,7 +56,6 @@ public class HotkeyService : IHotkeyService
         bool modifierMatch;
         if (_isMacOS)
         {
-            // On macOS, "Ctrl" in config means Cmd (Meta)
             modifierMatch = (_binding.Ctrl == metaDown) &&
                             (_binding.Shift == shiftDown) &&
                             (_binding.Alt == altDown);
@@ -78,15 +80,19 @@ public class HotkeyService : IHotkeyService
         {
             _hook.KeyPressed -= OnKeyPressed;
             _hook.Dispose();
+            if (_hookTask is not null)
+            {
+                await _hookTask;
+                _hookTask = null;
+            }
             _hook = null;
         }
-        await Task.CompletedTask;
     }
 
-    public async Task UpdateBindingAsync(HotkeyBinding binding)
+    public Task UpdateBindingAsync(HotkeyBinding binding)
     {
-        await StopAsync();
-        await StartAsync(binding);
+        _binding = binding;
+        return Task.CompletedTask;
     }
 
     public async ValueTask DisposeAsync()

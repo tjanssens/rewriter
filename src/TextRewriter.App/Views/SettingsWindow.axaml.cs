@@ -7,27 +7,28 @@ namespace TextRewriter.App.Views;
 
 public partial class SettingsWindow : Window
 {
+    // SharpHook 5.x KeyCode values (match Windows VK codes for letters/numbers)
     private static readonly Dictionary<Key, (ushort Code, string Name)> KeyMap = new()
     {
-        [Key.A] = (0x001E, "A"), [Key.B] = (0x0030, "B"), [Key.C] = (0x002E, "C"),
-        [Key.D] = (0x0020, "D"), [Key.E] = (0x0012, "E"), [Key.F] = (0x0021, "F"),
-        [Key.G] = (0x0022, "G"), [Key.H] = (0x0023, "H"), [Key.I] = (0x0017, "I"),
-        [Key.J] = (0x0024, "J"), [Key.K] = (0x0025, "K"), [Key.L] = (0x0026, "L"),
-        [Key.M] = (0x0032, "M"), [Key.N] = (0x0031, "N"), [Key.O] = (0x0018, "O"),
-        [Key.P] = (0x0019, "P"), [Key.Q] = (0x0010, "Q"), [Key.R] = (0x0013, "R"),
-        [Key.S] = (0x001F, "S"), [Key.T] = (0x0014, "T"), [Key.U] = (0x0016, "U"),
-        [Key.V] = (0x002F, "V"), [Key.W] = (0x0011, "W"), [Key.X] = (0x002D, "X"),
-        [Key.Y] = (0x0015, "Y"), [Key.Z] = (0x002C, "Z"),
-        [Key.D0] = (0x000B, "0"), [Key.D1] = (0x0002, "1"), [Key.D2] = (0x0003, "2"),
-        [Key.D3] = (0x0004, "3"), [Key.D4] = (0x0005, "4"), [Key.D5] = (0x0006, "5"),
-        [Key.D6] = (0x0007, "6"), [Key.D7] = (0x0008, "7"), [Key.D8] = (0x0009, "8"),
-        [Key.D9] = (0x000A, "9"),
-        [Key.F1] = (0x003B, "F1"), [Key.F2] = (0x003C, "F2"), [Key.F3] = (0x003D, "F3"),
-        [Key.F4] = (0x003E, "F4"), [Key.F5] = (0x003F, "F5"), [Key.F6] = (0x0040, "F6"),
-        [Key.F7] = (0x0041, "F7"), [Key.F8] = (0x0042, "F8"), [Key.F9] = (0x0043, "F9"),
-        [Key.F10] = (0x0044, "F10"), [Key.F11] = (0x0057, "F11"), [Key.F12] = (0x0058, "F12"),
-        [Key.Space] = (0x0039, "Space"), [Key.Enter] = (0x001C, "Enter"),
-        [Key.Tab] = (0x000F, "Tab"),
+        [Key.A] = (65, "A"), [Key.B] = (66, "B"), [Key.C] = (67, "C"),
+        [Key.D] = (68, "D"), [Key.E] = (69, "E"), [Key.F] = (70, "F"),
+        [Key.G] = (71, "G"), [Key.H] = (72, "H"), [Key.I] = (73, "I"),
+        [Key.J] = (74, "J"), [Key.K] = (75, "K"), [Key.L] = (76, "L"),
+        [Key.M] = (77, "M"), [Key.N] = (78, "N"), [Key.O] = (79, "O"),
+        [Key.P] = (80, "P"), [Key.Q] = (81, "Q"), [Key.R] = (82, "R"),
+        [Key.S] = (83, "S"), [Key.T] = (84, "T"), [Key.U] = (85, "U"),
+        [Key.V] = (86, "V"), [Key.W] = (87, "W"), [Key.X] = (88, "X"),
+        [Key.Y] = (89, "Y"), [Key.Z] = (90, "Z"),
+        [Key.D0] = (48, "0"), [Key.D1] = (49, "1"), [Key.D2] = (50, "2"),
+        [Key.D3] = (51, "3"), [Key.D4] = (52, "4"), [Key.D5] = (53, "5"),
+        [Key.D6] = (54, "6"), [Key.D7] = (55, "7"), [Key.D8] = (56, "8"),
+        [Key.D9] = (57, "9"),
+        [Key.F1] = (112, "F1"), [Key.F2] = (113, "F2"), [Key.F3] = (114, "F3"),
+        [Key.F4] = (115, "F4"), [Key.F5] = (116, "F5"), [Key.F6] = (117, "F6"),
+        [Key.F7] = (118, "F7"), [Key.F8] = (119, "F8"), [Key.F9] = (120, "F9"),
+        [Key.F10] = (121, "F10"), [Key.F11] = (122, "F11"), [Key.F12] = (123, "F12"),
+        [Key.Space] = (32, "Space"), [Key.Enter] = (10, "Enter"),
+        [Key.Tab] = (9, "Tab"),
     };
 
     public SettingsWindow()

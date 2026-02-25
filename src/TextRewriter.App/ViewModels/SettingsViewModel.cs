@@ -96,6 +96,29 @@ public class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public string ApiKey
+    {
+        get => _settings.ApiKey ?? "";
+        set
+        {
+            _settings.ApiKey = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AuthStatus));
+        }
+    }
+
+    public string AuthStatus
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
+                return "API key ingesteld";
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY")))
+                return "Via ANTHROPIC_API_KEY omgevingsvariabele";
+            return "Niet geconfigureerd";
+        }
+    }
+
     public bool IsRecordingHotkey
     {
         get => _isRecordingHotkey;

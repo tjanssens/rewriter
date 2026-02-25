@@ -2,7 +2,7 @@ namespace TextRewriter.Core.Models;
 
 public sealed class HotkeyBinding
 {
-    public ushort KeyCode { get; set; } = 0x0013; // 'R' key
+    public ushort KeyCode { get; set; } = 82; // VcR
     public string? KeyName { get; set; } = "R";
     public bool Ctrl { get; set; } = true;
     public bool Shift { get; set; } = true;

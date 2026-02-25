@@ -8,6 +8,7 @@ namespace TextRewriter.Services;
 public class AuthService : IAuthService
 {
     private readonly IPlatformService _platform;
+    private readonly ISettingsService _settingsService;
     private readonly ILogger<AuthService> _logger;
     private string? _cachedToken;
     private DateTime _cacheExpiry = DateTime.MinValue;
@@ -19,26 +20,31 @@ public class AuthService : IAuthService
         PropertyNameCaseInsensitive = true
     };
 
-    public AuthService(IPlatformService platform, ILogger<AuthService> logger)
+    public AuthService(IPlatformService platform, ISettingsService settingsService, ILogger<AuthService> logger)
     {
         _platform = platform;
+        _settingsService = settingsService;
         _logger = logger;
     }
 
     public bool IsAuthenticated => _cachedToken is not null;
 
-    public Task<string?> GetAccessTokenAsync()
-    {
-        return Task.FromResult(GetAccessTokenInternal());
-    }
-
-    private string? GetAccessTokenInternal()
+    public async Task<string?> GetAccessTokenAsync()
     {
         // Check cache
         if (_cachedToken is not null && DateTime.UtcNow < _cacheExpiry)
             return _cachedToken;
 
-        // Priority 1: ANTHROPIC_API_KEY environment variable
+        // Priority 1: API key from settings
+        var settings = await _settingsService.LoadAsync();
+        if (!string.IsNullOrWhiteSpace(settings.ApiKey))
+        {
+            _cachedToken = settings.ApiKey;
+            _cacheExpiry = DateTime.UtcNow.Add(CacheTtl);
+            return _cachedToken;
+        }
+
+        // Priority 2: ANTHROPIC_API_KEY environment variable
         var apiKey = Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY");
         if (!string.IsNullOrEmpty(apiKey))
         {
@@ -47,7 +53,7 @@ public class AuthService : IAuthService
             return apiKey;
         }
 
-        // Priority 2: CLAUDE_CODE_OAUTH_TOKEN environment variable
+        // Priority 3: CLAUDE_CODE_OAUTH_TOKEN environment variable
         var oauthEnv = Environment.GetEnvironmentVariable("CLAUDE_CODE_OAUTH_TOKEN");
         if (!string.IsNullOrEmpty(oauthEnv))
         {
@@ -56,7 +62,7 @@ public class AuthService : IAuthService
             return oauthEnv;
         }
 
-        // Priority 3: Claude Code credential file
+        // Priority 4: Claude Code credential file (OAuth)
         try
         {
             var credJson = _platform.ReadClaudeCredentials();
@@ -66,7 +72,6 @@ public class AuthService : IAuthService
                 var token = creds?.ClaudeAiOauth?.AccessToken;
                 if (!string.IsNullOrEmpty(token))
                 {
-                    // Check if token is expired
                     if (creds!.ClaudeAiOauth!.ExpiresAt.HasValue)
                     {
                         var expiresAt = DateTimeOffset.FromUnixTimeMilliseconds(creds.ClaudeAiOauth.ExpiresAt.Value);
@@ -89,5 +94,11 @@ public class AuthService : IAuthService
         }
 
         return null;
+    }
+
+    public void ClearCache()
+    {
+        _cachedToken = null;
+        _cacheExpiry = DateTime.MinValue;
     }
 }

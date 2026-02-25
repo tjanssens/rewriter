@@ -29,8 +29,21 @@
             </ListBox>
         </DockPanel>
 
-        <!-- Right: Profile editor -->
+        <!-- Right: Settings + Profile editor -->
         <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="12">
+                <!-- API Key (global) -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="API Key" FontWeight="Bold" />
+                    <TextBox Text="{Binding ApiKey}"
+                             Watermark="sk-ant-api03-..."
+                             PasswordChar="&#x2022;" />
+                    <TextBlock Text="{Binding AuthStatus}"
+                               FontSize="11" Foreground="Gray" />
+                </StackPanel>
+
+                <Separator Margin="0,4" />
+
             <StackPanel Spacing="12" IsEnabled="{Binding HasSelection}">
                 <TextBlock Text="Profiel bewerken" FontWeight="Bold" />
 
@@ -71,6 +84,7 @@
 
                 <Button Content="Opslaan" Click="OnSave"
                         HorizontalAlignment="Right" />
+            </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>
